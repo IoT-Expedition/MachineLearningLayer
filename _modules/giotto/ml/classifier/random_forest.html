@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>giotto.ml.classifier.random_forest &mdash; giotto  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="giotto  documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for giotto.ml.classifier.random_forest</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;Randome Forest Classifer Module&#39;&#39;&#39;</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">cross_val_score</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">preprocessing</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">feature_selection</span>
+
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">giotto.ml.database.classifier</span> <span class="kn">import</span> <span class="n">MLClassifier</span>
+<span class="kn">from</span> <span class="nn">giotto.ml.database.sensor</span> <span class="kn">import</span> <span class="n">MLSensor</span>  
+
+
+<div class="viewcode-block" id="MLRandomForest"><a class="viewcode-back" href="../../../../giotto.ml.classifier.html#giotto.ml.classifier.random_forest.MLRandomForest">[docs]</a><span class="k">class</span> <span class="nc">MLRandomForest</span><span class="p">(</span><span class="n">MLClassifier</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Random Forest classifier class</span>
+
+<span class="sd">    This class train a Random Forest classifier using a dataset passed to the</span>
+<span class="sd">    train function. Then, it makes a prediction using timeseries data given to</span>
+<span class="sd">    the &quot;predict&quot; function. </span>
+<span class="sd">    If you want to implement a classifier class using other models, replicate</span>
+<span class="sd">    this class. The class have to implement two functions at least, train and predict.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dictionary</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">serialized</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="n">MLClassifier</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">serialized</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;random forest&#39;</span>
+
+<div class="viewcode-block" id="MLRandomForest.extract_features"><a class="viewcode-back" href="../../../../giotto.ml.classifier.html#giotto.ml.classifier.random_forest.MLRandomForest.extract_features">[docs]</a>    <span class="k">def</span> <span class="nf">extract_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Extracts features from a given dataset</span>
+
+<span class="sd">        Extracts features with the preprocess function. The function is implemented</span>
+<span class="sd">        in the MLClassifier class.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span>
+
+        <span class="n">all_features</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">all_labels</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">raw_data</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;timeseries&#39;</span><span class="p">]</span>
+
+            <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span>
+            <span class="n">indexed_label</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">sample</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">])</span>
+
+            <span class="c1"># Stack features and labels</span>
+            <span class="k">if</span> <span class="n">all_features</span> <span class="o">==</span> <span class="p">[]:</span>
+                <span class="n">all_features</span> <span class="o">=</span> <span class="n">features</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">all_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">all_features</span><span class="p">,</span><span class="n">features</span><span class="p">))</span>
+
+            <span class="n">all_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">indexed_label</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;features&#39;</span><span class="p">:</span><span class="n">all_features</span><span class="p">,</span>
+            <span class="s1">&#39;labels&#39;</span><span class="p">:</span><span class="n">all_labels</span><span class="p">,</span>
+            <span class="s1">&#39;sampling_period&#39;</span><span class="p">:</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;sampling_period&#39;</span><span class="p">]</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">data</span>            </div>
+
+<div class="viewcode-block" id="MLRandomForest.train"><a class="viewcode-back" href="../../../../giotto.ml.classifier.html#giotto.ml.classifier.random_forest.MLRandomForest.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Trains a random forest classifier&#39;&#39;&#39;</span>
+
+        <span class="c1"># Generate a training set</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_features</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+
+        <span class="c1"># Prescale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span> <span class="o">=</span> <span class="n">preprocessing</span><span class="o">.</span><span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;features&#39;</span><span class="p">])</span>
+        <span class="n">scaledFeatures</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;features&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Select features  Random Forest does not require feature selection</span>
+        <span class="c1"># For other classifier uncomment the next 2 lines and do feature selection</span>
+        <span class="c1">#self.selector = feature_selection.SelectKBest(feature_selection.f_regression).fit(scaledFeatures, data.labels)</span>
+        <span class="c1">#selectedFeatures = self.selector.transform(scaledFeatures)</span>
+
+        <span class="c1"># Train a classifier</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">scaledFeatures</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampling_period</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sampling_period&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="MLRandomForest.predict"><a class="viewcode-back" href="../../../../giotto.ml.classifier.html#giotto.ml.classifier.random_forest.MLRandomForest.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeseries</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Makes a prediction using a pre-trained random forest classifier&#39;&#39;&#39;</span>
+
+        <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">timeseries</span><span class="p">)</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="n">features</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># prescaling</span>
+        <span class="n">scaled_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+
+        <span class="c1"># Feture selection</span>
+        <span class="c1">#selectedFeatures = selector.transform(scaledFeatures)</span>
+
+        <span class="c1"># Prediction</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">scaled_features</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)]</span></div></div>
+
+<span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">clf</span> <span class="o">=</span> <span class="n">MLRandomForest</span><span class="p">(</span><span class="s1">&#39;56b3c0f023cf8c29e049e89e&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">)</span>
+
+    <span class="n">clf</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+
+
+
+
+
+
+
+
+
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Carnegie Mellon University.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

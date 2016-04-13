@@ -1,0 +1,335 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>System Overview &mdash; giotto  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="giotto  documentation" href="../index.html" />
+    <link rel="prev" title="REST APIs" href="rest_api.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="system-overview">
+<h1>System Overview<a class="headerlink" href="#system-overview" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="system-architecture">
+<h2>System Architecture<a class="headerlink" href="#system-architecture" title="Permalink to this headline">¶</a></h2>
+<p>The machine learning layer is a Flask server that provides REST APIs
+to create, train, use machine learning based sensors, which we call
+<em>virtual sensors</em>.
+Here is a system diagram.</p>
+<a class="reference internal image-reference" href="../_images/ml_system_overview.png"><img alt="../_images/ml_system_overview.png" src="../_images/ml_system_overview.png" style="height: 300px;" /></a>
+<p>The ML Layer, which is a Flask server, provides REST APIs for ML Front ends.
+ML Front ends provide user interfaces for users to
+create, train, and use virtual sensors.
+See ML Client for Android as an example.
+See the next section for more details of the sequences of these operations.</p>
+<p>The ML Layer stores virtual sensors&#8217; meta data, classifiers, and samples in
+Mongo DB.
+For each sample, the ML Layer only stores a start time, an end times,
+and a label.
+Time series data is obtained from Building Depot via its REST APIs
+to train classifiers and to make predictions as needed basis.</p>
+</div>
+<div class="section" id="example-scenario">
+<h2>Example Scenario<a class="headerlink" href="#example-scenario" title="Permalink to this headline">¶</a></h2>
+<p>This section describes how the REST APIs are used to train and use classifiers
+in this GIoTTO Machine Learning Layer.</p>
+<p>We assume that enough sensors are already deployed in users&#8217; environment,
+and that these sensors are property connected to BuildingDepot.
+Also, we assume that users DO NOT have machine learning knowledge.
+The process described in this page is implemented in the Machine Learning Front
+End for Android. Referring to its source code will help understand the procedure well.</p>
+<p>In the followings, we create a virtual door sensor that returns either a door is
+<em>open</em> or <em>closed</em>.
+We explain the procedure using curl commands
+so that you can try the process without writing code.
+We assume that both Building Depot and machine learning layer is running
+on a server giotto.cmu.edu. Replace this server based on your environment.</p>
+<div class="section" id="create-a-virtual-sensor">
+<h3>Create a Virtual Sensor<a class="headerlink" href="#create-a-virtual-sensor" title="Permalink to this headline">¶</a></h3>
+<p>First, we need to create a virtual sensor.
+A virtual sensor is a machine-learning-based sensors in GIoTTO.
+A virtual sensor uses sensor readings from other sensors as inputs and make
+predictions based on a machine learning classifier.</p>
+<p>When creating a virtual sensor, we need to find real sensors near a
+virtual sensor that we want to create.
+Now, let&#8217;s assume that the door sensor is for a door in Room1.
+We query
+by querying Building Depot with location via a Building Depot&#8217;s REST API.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ curl -X GET http://buildingdepot.andrew.cmu.edu:82/service/api/v1/location<span class="o">=</span>Room1/metadata
+</pre></div>
+</div>
+<p>This returns</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">{</span>
+  <span class="s2">&quot;data&quot;</span>: <span class="o">{</span>
+    <span class="s2">&quot;sensor_1&quot;</span>: <span class="o">{</span>
+      <span class="s2">&quot;building&quot;</span>: <span class="s2">&quot;NSH&quot;</span>,
+      <span class="s2">&quot;metadata&quot;</span>: <span class="o">{</span>
+        <span class="s2">&quot;location&quot;</span>: <span class="s2">&quot;Room1&quot;</span>,
+        <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;Temperature&quot;</span>
+      <span class="o">}</span>,
+      <span class="s2">&quot;name&quot;</span>: <span class="s2">&quot;c82e86ae-fb89-40c8-879f-d8bad3a7ef8b&quot;</span>,
+      <span class="s2">&quot;source_identifier&quot;</span>: <span class="s2">&quot;SensorTag001&quot;</span>,
+      <span class="s2">&quot;source_name&quot;</span>: <span class="s2">&quot;Temperature&quot;</span>,
+      <span class="s2">&quot;tags&quot;</span>: <span class="o">[]</span>
+    <span class="o">}</span>,
+    <span class="s2">&quot;sensor_2&quot;</span>: <span class="o">{</span>
+      <span class="s2">&quot;building&quot;</span>: <span class="s2">&quot;NSH&quot;</span>,
+      <span class="s2">&quot;metadata&quot;</span>: <span class="o">{</span>
+        <span class="s2">&quot;location&quot;</span>: <span class="s2">&quot;Room1&quot;</span>,
+        <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;Humidity&quot;</span>
+      <span class="o">}</span>,
+      <span class="s2">&quot;name&quot;</span>: <span class="s2">&quot;85105ac7-bfdf-40d4-91c0-df2e91f58e55&quot;</span>,
+      <span class="s2">&quot;source_identifier&quot;</span>: <span class="s2">&quot;SensorTag001&quot;</span>,
+      <span class="s2">&quot;source_name&quot;</span>: <span class="s2">&quot;Humidity&quot;</span>,
+      <span class="s2">&quot;tags&quot;</span>: <span class="o">[]</span>
+    <span class="o">}</span>,
+    <span class="s2">&quot;sensor_3&quot;</span>: <span class="o">{</span>
+      <span class="s2">&quot;building&quot;</span>: <span class="s2">&quot;NSH&quot;</span>,
+      <span class="s2">&quot;metadata&quot;</span>: <span class="o">{</span>
+        <span class="s2">&quot;location&quot;</span>: <span class="s2">&quot;Room1&quot;</span>,
+        <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;Pressure&quot;</span>
+      <span class="o">}</span>,
+      <span class="s2">&quot;name&quot;</span>: <span class="s2">&quot;0152e43a-901e-42ae-ad2f-460e3165d58b&quot;</span>,
+      <span class="s2">&quot;source_identifier&quot;</span>: <span class="s2">&quot;SensorTag001&quot;</span>,
+      <span class="s2">&quot;source_name&quot;</span>: <span class="s2">&quot;Pressure&quot;</span>,
+      <span class="s2">&quot;tags&quot;</span>: <span class="o">[]</span>
+    <span class="o">}</span>,
+    <span class="s2">&quot;sensor_4&quot;</span>: <span class="o">{</span>
+      <span class="s2">&quot;building&quot;</span>: <span class="s2">&quot;NSH&quot;</span>,
+      <span class="s2">&quot;metadata&quot;</span>: <span class="o">{</span>
+        <span class="s2">&quot;location&quot;</span>: <span class="s2">&quot;Room1&quot;</span>,
+        <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;Lux&quot;</span>
+      <span class="o">}</span>,
+      <span class="s2">&quot;name&quot;</span>: <span class="s2">&quot;baa054de-85b6-4ef4-abc4-dd210d76c2fc&quot;</span>,
+      <span class="s2">&quot;source_identifier&quot;</span>: <span class="s2">&quot;SensorTag001&quot;</span>,
+      <span class="s2">&quot;source_name&quot;</span>: <span class="s2">&quot;Lux&quot;</span>,
+      <span class="s2">&quot;tags&quot;</span>: <span class="o">[]</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<p>Then, we call the machine learning layer&#8217;s REST API to create a virtual sensor
+with <em>name</em> parameters obtained in the previous call.
+We formatted JSON nicely to make it easy to read.
+When</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ curl -X POST http://giotto.cmu.edu:5000/sensor -d
+        <span class="s1">&#39;{</span>
+<span class="s1">                &quot;name&quot;:&quot;Door Sensor&quot;,</span>
+<span class="s1">                &quot;description&quot;:&quot;A door sensor at Room #1&quot;,</span>
+<span class="s1">                &quot;labels&quot;:[],</span>
+<span class="s1">                &quot;user_id&quot;:&quot;default&quot;,</span>
+<span class="s1">                &quot;sensor_uuid&quot;:&quot;&quot;,</span>
+<span class="s1">                &quot;inputs&quot;:[</span>
+<span class="s1">                        &quot;c82e86ae-fb89-40c8-879f-d8bad3a7ef8b&quot;,</span>
+<span class="s1">                        &quot;85105ac7-bfdf-40d4-91c0-df2e91f58e55&quot;,</span>
+<span class="s1">                        &quot;0152e43a-901e-42ae-ad2f-460e3165d58b&quot;,</span>
+<span class="s1">                        &quot;baa054de-85b6-4ef4-abc4-dd210d76c2fc&quot;</span>
+<span class="s1">                ],</span>
+<span class="s1">                &quot;training_set&quot;:[]</span>
+<span class="s1">        }&#39;</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">{</span>
+        <span class="s2">&quot;url&quot;</span>:<span class="s2">&quot;http:\/\/giotto.cmu.edu:5000\/sensor&quot;</span>,
+        <span class="s2">&quot;method&quot;</span>:<span class="s2">&quot;POST&quot;</span>,
+        <span class="s2">&quot;ret&quot;</span>:<span class="s2">&quot;56f97c6aa9705e6202ed7d2f&quot;</span>,
+        <span class="s2">&quot;result&quot;</span>:<span class="s2">&quot;ok&quot;</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="add-training-samples">
+<h3>Add Training Samples<a class="headerlink" href="#add-training-samples" title="Permalink to this headline">¶</a></h3>
+<p>After creating a virtual sensor, we need to provide training samples.
+A training sample consists of a start time, an end time, and a label.
+A label is a user-defined string for a state.
+In the door example, it is either <em>open</em> or <em>close</em>.</p>
+<p>To add a sample, we need to specify these three pieces of information.
+Be aware that the start time and end time are timestamp on a server
+where the machine learning layer is running.
+If a system time on a front end (e.g, a smart phone) is synchronized,
+we can use a timestamp from the front end.
+However, we recommend to fetch a timestamp from the server to be sure.</p>
+<p>To add a <em>open</em> sample, you actually open the door and,</p>
+<p>Fetch a timestamp for a start time
+.. code-block:: bash</p>
+<blockquote>
+<div>$ curl -X GET <a class="reference external" href="http://giotto.cmu.edu:5000/time">http://giotto.cmu.edu:5000/time</a></div></blockquote>
+<p>Returns:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">{</span>
+        <span class="s2">&quot;url&quot;</span>:<span class="s2">&quot;http:\/\/giotto.cmu.edu:5000\/time&quot;</span>,
+        <span class="s2">&quot;method&quot;</span>:<span class="s2">&quot;GET&quot;</span>,
+        <span class="s2">&quot;ret&quot;</span>:1.459193282185012E9,
+        <span class="s2">&quot;result&quot;</span>:<span class="s2">&quot;ok&quot;</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<p>Then, wait for a few second and fetch a timestamp for an end time using the same API
+Finally, add a sample with the start time, the end time and a label <em>open</em> using the sensor ID obtained when creating a virtual sensor</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ curl -X POST http://giotto.cmu.edu:5000/sensor/56f97c6aa9705e6202ed7d2f/sample -d
+        <span class="s1">&#39;{</span>
+<span class="s1">                &quot;start_time&quot;:1.459193282185012E9,</span>
+<span class="s1">                &quot;end_time&quot;:  1.45919335340626E9,</span>
+<span class="s1">                &quot;label&quot;:&quot;open&quot;</span>
+<span class="s1">        }&#39;</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">{</span>
+        <span class="s2">&quot;result&quot;</span>:<span class="s2">&quot;ok&quot;</span>,
+        <span class="s2">&quot;uri&quot;</span>:<span class="s2">&quot;http:\/\/giotto.cmu.edu:5000\/sensor\/56f97b24a9705e1911016e56\/sample&quot;</span>,
+        <span class="s2">&quot;ret&quot;</span>:<span class="s2">&quot;56f98722a9705e6235f9e083&quot;</span>,
+        <span class="s2">&quot;method&quot;</span>:<span class="s2">&quot;POST&quot;</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<p>Repeat the procedure above at least 5 times for each of <em>open</em> and <em>close</em>
+to add enough samples for training.</p>
+</div>
+<div class="section" id="train-a-classifier">
+<h3>Train a Classifier<a class="headerlink" href="#train-a-classifier" title="Permalink to this headline">¶</a></h3>
+<p>Now, we can train a classifier based on the samples collected in the previous step.
+Call <strong>Train</strong> with a virtual sensor ID obtained in the first step.
+When the train API is called, the system extract sensor readings from Building Depot
+based on start times and end times, extract features from the sensor readings,
+and add labels to generate a training set.
+Then, the system trains a random forest classifier with the training set.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ curl -X POST http://giotto.cmu.edu:5000/sensor/56f97c6aa9705e6202ed7d2f/classifier/train
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">{</span>
+        <span class="s2">&quot;result&quot;</span>:<span class="s2">&quot;ok&quot;</span>,
+        <span class="s2">&quot;uri&quot;</span>:<span class="s2">&quot;http:\/\/giotto.cmu.edu:5000\/sensor\/56f97b24a9705e1911016e56\/classifier/train&quot;</span>,
+        <span class="s2">&quot;method&quot;</span>:<span class="s2">&quot;POST&quot;</span>
+        <span class="s2">&quot;message&quot;</span>:<span class="s2">&quot;&quot;</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<p>At the same time, the system calculate an average of sampling durations over
+the samples. The average is used as a sampling window when making a prediction
+using the classifier.</p>
+</div>
+<div class="section" id="make-a-prediction">
+<h3>Make a Prediction<a class="headerlink" href="#make-a-prediction" title="Permalink to this headline">¶</a></h3>
+<p>Finally call Predict to make a prediction using the trained classifier.
+In the Predict API, we need to pass a timestamp of a prediction.
+Then, the system takes sensor readings from the timestamp - sampling window to
+the timestamp are used as input for the classifier to make a prediction.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ curl -X POST http://giotto.cmu.edu:5000/sensor/56f97c6aa9705e6202ed7d2f/classifier/predict
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">{</span>
+        <span class="s2">&quot;result&quot;</span>:<span class="s2">&quot;ok&quot;</span>,
+        <span class="s2">&quot;uri&quot;</span>:<span class="s2">&quot;http:\/\/giotto.cmu.edu:5000\/sensor\/56f97b24a9705e1911016e56\/classifier/predict&quot;</span>,
+        <span class="s2">&quot;method&quot;</span>:<span class="s2">&quot;GET&quot;</span>
+        <span class="s2">&quot;ret&quot;</span>:<span class="s2">&quot;open&quot;</span>
+        <span class="s2">&quot;message&quot;</span>:<span class="s2">&quot;&quot;</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">System Overview</a><ul>
+<li><a class="reference internal" href="#system-architecture">System Architecture</a></li>
+<li><a class="reference internal" href="#example-scenario">Example Scenario</a><ul>
+<li><a class="reference internal" href="#create-a-virtual-sensor">Create a Virtual Sensor</a></li>
+<li><a class="reference internal" href="#add-training-samples">Add Training Samples</a></li>
+<li><a class="reference internal" href="#train-a-classifier">Train a Classifier</a></li>
+<li><a class="reference internal" href="#make-a-prediction">Make a Prediction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="rest_api.html" title="previous chapter">REST APIs</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/contents/example.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Carnegie Mellon University.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="../_sources/contents/example.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

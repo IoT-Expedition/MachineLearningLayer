@@ -1,0 +1,151 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>giotto.ml.classifier package &mdash; giotto  documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="giotto  documentation" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="giotto-ml-classifier-package">
+<h1>giotto.ml.classifier package<a class="headerlink" href="#giotto-ml-classifier-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="giotto-ml-classifier-manager-module">
+<h2>giotto.ml.classifier.manager module<a class="headerlink" href="#giotto-ml-classifier-manager-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-giotto.ml.classifier.random_forest">
+<span id="giotto-ml-classifier-random-forest-module"></span><h2>giotto.ml.classifier.random_forest module<a class="headerlink" href="#module-giotto.ml.classifier.random_forest" title="Permalink to this headline">¶</a></h2>
+<p>Randome Forest Classifer Module</p>
+<dl class="class">
+<dt id="giotto.ml.classifier.random_forest.MLRandomForest">
+<em class="property">class </em><code class="descclassname">giotto.ml.classifier.random_forest.</code><code class="descname">MLRandomForest</code><span class="sig-paren">(</span><em>dictionary=None</em>, <em>serialized=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/classifier/random_forest.html#MLRandomForest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.classifier.random_forest.MLRandomForest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="giotto.ml.database.html#giotto.ml.database.classifier.MLClassifier" title="giotto.ml.database.classifier.MLClassifier"><code class="xref py py-class docutils literal"><span class="pre">giotto.ml.database.classifier.MLClassifier</span></code></a></p>
+<p>Random Forest classifier class</p>
+<p>This class train a Random Forest classifier using a dataset passed to the
+train function. Then, it makes a prediction using timeseries data given to
+the &#8220;predict&#8221; function. 
+If you want to implement a classifier class using other models, replicate
+this class. The class have to implement two functions at least, train and predict.</p>
+<dl class="method">
+<dt id="giotto.ml.classifier.random_forest.MLRandomForest.extract_features">
+<code class="descname">extract_features</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/classifier/random_forest.html#MLRandomForest.extract_features"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.classifier.random_forest.MLRandomForest.extract_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts features from a given dataset</p>
+<p>Extracts features with the preprocess function. The function is implemented
+in the MLClassifier class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="giotto.ml.classifier.random_forest.MLRandomForest.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>timeseries</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/classifier/random_forest.html#MLRandomForest.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.classifier.random_forest.MLRandomForest.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a prediction using a pre-trained random forest classifier</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="giotto.ml.classifier.random_forest.MLRandomForest.train">
+<code class="descname">train</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/classifier/random_forest.html#MLRandomForest.train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.classifier.random_forest.MLRandomForest.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains a random forest classifier</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-giotto.ml.classifier">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-giotto.ml.classifier" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">giotto.ml.classifier package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#giotto-ml-classifier-manager-module">giotto.ml.classifier.manager module</a></li>
+<li><a class="reference internal" href="#module-giotto.ml.classifier.random_forest">giotto.ml.classifier.random_forest module</a></li>
+<li><a class="reference internal" href="#module-giotto.ml.classifier">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/giotto.ml.classifier.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Carnegie Mellon University.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/giotto.ml.classifier.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

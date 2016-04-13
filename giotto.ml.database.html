@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>giotto.ml.database package &mdash; giotto  documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="giotto  documentation" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="giotto-ml-database-package">
+<h1>giotto.ml.database package<a class="headerlink" href="#giotto-ml-database-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-giotto.ml.database.classifier">
+<span id="giotto-ml-database-classifier-module"></span><h2>giotto.ml.database.classifier module<a class="headerlink" href="#module-giotto.ml.database.classifier" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="giotto.ml.database.classifier.MLClassifier">
+<em class="property">class </em><code class="descclassname">giotto.ml.database.classifier.</code><code class="descname">MLClassifier</code><span class="sig-paren">(</span><em>dictionary=None</em>, <em>serialized=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/database/classifier.html#MLClassifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.database.classifier.MLClassifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Classifier base class</p>
+<dl class="method">
+<dt id="giotto.ml.database.classifier.MLClassifier.peak_count">
+<code class="descname">peak_count</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/database/classifier.html#MLClassifier.peak_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.database.classifier.MLClassifier.peak_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Counts the number of peaks in given timesries data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="giotto.ml.database.classifier.MLClassifier.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>timeseries</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/database/classifier.html#MLClassifier.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.database.classifier.MLClassifier.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a prediction using a pre-trained classifier</p>
+<p>A derived class should implement a prediction algorithm here.</p>
+<dl class="docutils">
+<dt>Args: </dt>
+<dd>timeseries: Timeseries data for prediction</dd>
+<dt>Returns:</dt>
+<dd>label: a string label as a prediction</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="giotto.ml.database.classifier.MLClassifier.preprocess">
+<code class="descname">preprocess</code><span class="sig-paren">(</span><em>sensor_readings</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/database/classifier.html#MLClassifier.preprocess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.database.classifier.MLClassifier.preprocess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts features from timeseries data</p>
+<p>Extracts the following features from a array of timeseries data.
+Averages, standard deviations, numbers of peaks, medians, minimum values,
+maximum values, numbers of zero-crossing, differences between max and min.
+If you want to implement your own feature extraction, overwrite this function
+in a derived class.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sensor_readings: An array of timeseries data</dd>
+<dt>Returns:</dt>
+<dd>f: a ndarray that contains features for each timeseries data</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="giotto.ml.database.classifier.MLClassifier.to_dictionary">
+<code class="descname">to_dictionary</code><span class="sig-paren">(</span><em>serialized=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/database/classifier.html#MLClassifier.to_dictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.database.classifier.MLClassifier.to_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a dictionary that contains all properties</p>
+<p>Creates a dictionary that contains all properties to store a classifier
+in a database. When serialized=True, classifier, scaler, selector, and
+model instance are serialized.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>serialized: A flag that indicates if instances should be serialized or not</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt>dic: A dictionary that contains all properties, typically used to store</dt>
+<dd>a classifier in a database</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="giotto.ml.database.classifier.MLClassifier.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/database/classifier.html#MLClassifier.to_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.database.classifier.MLClassifier.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a JSON representation of a MLClassifier instance</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="giotto.ml.database.classifier.MLClassifier.train">
+<code class="descname">train</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/database/classifier.html#MLClassifier.train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.database.classifier.MLClassifier.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains a classifier using the dataset as a training set</p>
+<p>A derived class should implement a training algorithm that creates and
+train classifier, scaler, selector, and model here.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>dataset: A dictionary that holds a training set</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd><dl class="first docutils">
+<dt>&#8216;data&#8217;: An array of training samples</dt>
+<dd><blockquote class="first">
+<div><dl class="docutils">
+<dt>[</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>&#8216;timeseries&#8217;: An array of timeseries data arrays
+&#8216;label&#8217;: A string label for the timeseries data</dd>
+</dl>
+<p class="last">},
+{ more samples }</p>
+</dd>
+</dl>
+</div></blockquote>
+<p class="last">]</p>
+</dd>
+</dl>
+<p class="last">&#8216;labels&#8217;: An array of string labels
+&#8216;sampling_period&#8217;: An average duration of samples</p>
+</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>Nothing</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="giotto.ml.database.classifier.MLClassifier.zero_crossing">
+<code class="descname">zero_crossing</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/database/classifier.html#MLClassifier.zero_crossing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.database.classifier.MLClassifier.zero_crossing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Counts the number of zero-crossing in given timesries data</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="giotto-ml-database-manager-module">
+<h2>giotto.ml.database.manager module<a class="headerlink" href="#giotto-ml-database-manager-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-giotto.ml.database.sample">
+<span id="giotto-ml-database-sample-module"></span><h2>giotto.ml.database.sample module<a class="headerlink" href="#module-giotto.ml.database.sample" title="Permalink to this headline">¶</a></h2>
+<p>Machine learning sample class for the machine learning layer</p>
+<dl class="class">
+<dt id="giotto.ml.database.sample.MLSample">
+<em class="property">class </em><code class="descclassname">giotto.ml.database.sample.</code><code class="descname">MLSample</code><span class="sig-paren">(</span><em>dictionary=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/database/sample.html#MLSample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.database.sample.MLSample" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="giotto.ml.database.sample.MLSample.to_dictionary">
+<code class="descname">to_dictionary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/database/sample.html#MLSample.to_dictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.database.sample.MLSample.to_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary representation of a MLSample instance</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="giotto.ml.database.sample.MLSample.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/database/sample.html#MLSample.to_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.database.sample.MLSample.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a JSON representation of a MLSample instance</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-giotto.ml.database.sensor">
+<span id="giotto-ml-database-sensor-module"></span><h2>giotto.ml.database.sensor module<a class="headerlink" href="#module-giotto.ml.database.sensor" title="Permalink to this headline">¶</a></h2>
+<p>Machine learning sensor class for the machine learning layer</p>
+<dl class="class">
+<dt id="giotto.ml.database.sensor.MLSensor">
+<em class="property">class </em><code class="descclassname">giotto.ml.database.sensor.</code><code class="descname">MLSensor</code><span class="sig-paren">(</span><em>dictionary=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/database/sensor.html#MLSensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.database.sensor.MLSensor" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="giotto.ml.database.sensor.MLSensor.to_dictionary">
+<code class="descname">to_dictionary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/database/sensor.html#MLSensor.to_dictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.database.sensor.MLSensor.to_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary representation of a MLSensor instance</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="giotto.ml.database.sensor.MLSensor.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/giotto/ml/database/sensor.html#MLSensor.to_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#giotto.ml.database.sensor.MLSensor.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a JSON representation of a MLSensor instance</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-giotto.ml.database">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-giotto.ml.database" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">giotto.ml.database package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-giotto.ml.database.classifier">giotto.ml.database.classifier module</a></li>
+<li><a class="reference internal" href="#giotto-ml-database-manager-module">giotto.ml.database.manager module</a></li>
+<li><a class="reference internal" href="#module-giotto.ml.database.sample">giotto.ml.database.sample module</a></li>
+<li><a class="reference internal" href="#module-giotto.ml.database.sensor">giotto.ml.database.sensor module</a></li>
+<li><a class="reference internal" href="#module-giotto.ml.database">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/giotto.ml.database.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Carnegie Mellon University.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/giotto.ml.database.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

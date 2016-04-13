@@ -1,0 +1,401 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>REST APIs &mdash; giotto  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="giotto  documentation" href="../index.html" />
+    <link rel="next" title="System Overview" href="example.html" />
+    <link rel="prev" title="Installation" href="install.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="rest-apis">
+<h1>REST APIs<a class="headerlink" href="#rest-apis" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="virtual-sensors">
+<h2>Virtual Sensors<a class="headerlink" href="#virtual-sensors" title="Permalink to this headline">¶</a></h2>
+<p>Virtual sensors are essentially machine learning classifiers.</p>
+<div class="section" id="create-a-virtual-sensor">
+<h3>Create a Virtual Sensor<a class="headerlink" href="#create-a-virtual-sensor" title="Permalink to this headline">¶</a></h3>
+<p>Creates a virtual sensor using a JSON passed as data, and returns its object ID.</p>
+<p>API</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>POST &lt;server&gt;:&lt;port&gt;/sensor
+</pre></div>
+</div>
+<p>Arguments as data</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
+        &quot;name&quot;: name of a virtual sensor
+        &quot;user_id&quot;: ID of a user who creates this sensor
+        &quot;labels&quot;: An array of strings denoting labels
+        &quot;inputs&quot;: An array of UUIDs of real sensors used as
+                inputs for a classifier
+        &quot;sensor_uuid&quot;: A sensor UUID of this virtual sensor
+                in BD (can pass blank)
+        &quot;description&quot;: A description of this virtual sensor
+}
+</pre></div>
+</div>
+<p>Returns</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
+    &quot;url&quot;: A URL of the HTTP call
+    &quot;method&quot;: &quot;POST&quot;
+    &quot;result&quot;: error when insertion failed, otherwise ok
+    &quot;ret&quot;: The virtual sensor&#39;s ID
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-all-virtual-sensors">
+<h3>Get All Virtual Sensors<a class="headerlink" href="#get-all-virtual-sensors" title="Permalink to this headline">¶</a></h3>
+<p>Returns a list of all virtual sensors in the ML layer as an array of objects.</p>
+<p>API</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>GET &lt;server&gt;:&lt;port&gt;/sensors/
+</pre></div>
+</div>
+<p>Arguments: None</p>
+<p>Returns</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
+    &quot;url&quot;: A URL of the HTTP call
+    &quot;method&quot;: &quot;GET&quot;
+    &quot;result&quot;: &quot;ok&quot;
+    &quot;ret&quot;:[
+        {
+            &quot;_id&quot;: A virtual sensor&#39;s object ID
+            &quot;name&quot;: A sensor name
+            &quot;sensor_uuid&quot;: A UUID of a sensor if it&#39;s registerd in BD
+            &quot;user_id&quot;: An ID of a user who created this sensor
+            &quot;labels&quot;: An array of labels
+            &quot;inputs&quot;: An array of sensor UUIDs in BD used as inputs
+                for a classifier
+            &quot;description&quot;: A description of a sensor
+        },
+        { More sensor objects if there are }
+    ]
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-a-virtual-sensor">
+<h3>Get a Virtual Sensor<a class="headerlink" href="#get-a-virtual-sensor" title="Permalink to this headline">¶</a></h3>
+<p>Returns an object containing information about a virtual sensor.</p>
+<p>API</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>GET &lt;server&gt;:&lt;port&gt;/sensor/{sensor id}
+</pre></div>
+</div>
+<p>Argument as a part of URL</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{sensor id}; A sensor&#39;s object ID
+</pre></div>
+</div>
+<p>Returns</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
+    &quot;url&quot;: A URL of the HTTP call
+    &quot;method&quot;: &quot;GET&quot;
+    &quot;result&quot;: ok or error
+    &quot;ret&quot;:{
+        &quot;_id&quot;: A virtual sensor&#39;s object ID
+        &quot;name&quot;: A sensor name
+        &quot;sensor_uuid&quot;: A UUID of a sensor if it&#39;s registerd in BD
+        &quot;user_id&quot;: An ID of a user who created this sensor
+        &quot;labels&quot;: An array of labels
+        &quot;inputs&quot;: An array of sensor UUIDs in BD used as inputs for
+            a classifier
+        &quot;description&quot;: A description of a sensor
+    }
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="update-a-virtual-sensor-information">
+<h3>Update a Virtual Sensor Information<a class="headerlink" href="#update-a-virtual-sensor-information" title="Permalink to this headline">¶</a></h3>
+<p>Updates existing virtual sensor information and returns updated information.</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>PUT &lt;server&gt;:&lt;port&gt;/sensor/{sensor id}
+</pre></div>
+</div>
+<p>Argument as a part of URL</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{sensor id}: A virtual sensor&#39;s object ID
+</pre></div>
+</div>
+<p>Argument as data</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
+    &quot;_id&quot;: Object ID of an existing virtual sensor
+    &quot;name&quot;: A name of a virtual sensor
+    &quot;user_id&quot;: ID of a user who creates this sensor
+    &quot;labels&quot;: An array of strings denoting labels
+    &quot;inputs&quot;: An array of UUIDs of real sensors used as
+        inputs for a classifier
+    &quot;sensor_uuid&quot;: A sensor UUID of this virtual sensor
+        in BD (can pass blank)
+    &quot;description&quot;: A description of this virtual sensor
+}
+</pre></div>
+</div>
+<p>Returns</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
+    &quot;url&quot;: A URL of the HTTP call
+    &quot;method&quot;: &quot;PUT&quot;
+    &quot;result&quot;: ok or error
+    &quot;ret&quot;:{
+        &quot;_id&quot;: A virtual sensor&#39;s object ID
+        &quot;name&quot;: A sensor name
+        &quot;sensor_uuid&quot;: A UUID of a sensor if it&#39;s registered in BD
+        &quot;user_id&quot;: An ID of a user who created this sensor
+        &quot;labels&quot;: An array of labels
+        &quot;inputs&quot;: An array of sensor UUIDs in BD used as inputs
+            for a classifier
+        &quot;description&quot;: A description of a sensor
+    }
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="delete-a-virtual-sensor">
+<h3>Delete a Virtual Sensor<a class="headerlink" href="#delete-a-virtual-sensor" title="Permalink to this headline">¶</a></h3>
+<p>Deletes a virtual sensor, corresponding classifier, and samples from ML Layer&#8217;s database.</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>DELETE &lt;server&gt;:&lt;port&gt;/sensor/{sensor id}
+</pre></div>
+</div>
+<p>Argument as a part of URL</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{sensor id}: A object ID of a virtual sensor
+</pre></div>
+</div>
+<p>Returns</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
+    &quot;url&quot;: A URL of the HTTP call
+    &quot;method&quot;: &quot;DELETE&quot;
+    &quot;result&quot;: error when deletion failed, otherwise ok
+}
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="samples">
+<h2>Samples<a class="headerlink" href="#samples" title="Permalink to this headline">¶</a></h2>
+<p>Samples are training samples given by users.
+A sample contains an object ID of a virtual sensor, a start time, an end time and a label.
+A virtual sensor has a list of real sensors related to the virtual sensor.
+Thus, using these information, a training set can be constructed later to
+train a classifier for a virtual sensor.</p>
+<p>Add a Sample to a Virtual Sensor</p>
+<p>API</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>POST &lt;server&gt;:&lt;port&gt;/sensor/{sensor id}/sample
+</pre></div>
+</div>
+<p>Arguments as a part of URL</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{sensor id}: An object ID of a virtual sensor
+</pre></div>
+</div>
+<p>Argument as data</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
+    &quot;start_time&quot;: A unix timestamp denoting when a sample starts
+    &quot;end_time&quot;: A unix timestamp denoting when a sample ends
+    &quot;label&quot;: A label string
+}
+</pre></div>
+</div>
+<p>Returns</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
+    &quot;url&quot;: A URL of the HTTP call
+    &quot;method&quot;: &quot;POST&quot;
+    &quot;result&quot;: error when insertion failed, otherwise ok
+    &quot;ret&quot;: The sample&#39;s ID
+}
+</pre></div>
+</div>
+<div class="section" id="get-a-list-of-samples-for-a-virtual-sensor">
+<h3>Get a List of Samples for a Virtual Sensor<a class="headerlink" href="#get-a-list-of-samples-for-a-virtual-sensor" title="Permalink to this headline">¶</a></h3>
+<p>Returns an array of samples for a virtual sensor.</p>
+<p>API</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>GET &lt;server&gt;:&lt;port&gt;/sensor/{sensor id}/samples
+</pre></div>
+</div>
+<p>Arguments as a part of URL</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{sensor id}: An object ID of a virtual sensor
+</pre></div>
+</div>
+<p>Returns</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
+    &quot;url&quot;: A URL of the HTTP call
+    &quot;method&quot;: &quot;GET&quot;
+    &quot;result&quot;: error when read failed, otherwise ok
+    &quot;ret&quot;: An array of sample objects
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="delete-samples-for-a-virtual-sensor">
+<h3>Delete Samples for a Virtual Sensor<a class="headerlink" href="#delete-samples-for-a-virtual-sensor" title="Permalink to this headline">¶</a></h3>
+<p>Deletes all samples for a virtual sensor.</p>
+<p>Argument as a part of URL</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{sensor id}: An object ID of a virtual sensor
+</pre></div>
+</div>
+<p>Returns</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
+    &quot;url&quot;: A URL of the HTTP call
+    &quot;method&quot;: &quot;DELETE&quot;
+    &quot;result&quot;: error when deletion failed, otherwise ok
+}
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="classifier">
+<h2>Classifier<a class="headerlink" href="#classifier" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="train-a-classifier-using-samples">
+<h3>Train a Classifier using Samples<a class="headerlink" href="#train-a-classifier-using-samples" title="Permalink to this headline">¶</a></h3>
+<p>Trains a classifier for a virtual sensor using its samples as a training set.
+A trained classifier is stored in a database and can be used to make predictions.</p>
+<p>API</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>POST &lt;server&gt;:&lt;port&gt;/sensor/{sensor id}/classifier/train
+</pre></div>
+</div>
+<p>Argument as a part of URL</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{sensor id}: An object ID of a virtual sensor
+</pre></div>
+</div>
+<p>Returns</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
+    &quot;url&quot;: A URL of the HTTP call
+    &quot;method&quot;: &quot;POST&quot;
+    &quot;result&quot;: Error when training failed, otherwise ok
+    &quot;message&quot;: A human readable message from classifier.manager.train
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="makes-a-prediction-using-a-classifier">
+<h3>Makes a Prediction using a Classifier<a class="headerlink" href="#makes-a-prediction-using-a-classifier" title="Permalink to this headline">¶</a></h3>
+<p>Makes a prediction using a pre-trained classifier with timeseries data in a range
+[end time - sampling period, end time]. sampling period is an average of sampling
+durations in a training set, which is stored as a part of a classifier.
+When end_time is not specific, current time is used as end_time.</p>
+<p>API</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>GET &lt;server&gt;:&lt;port&gt;/sensor/{sensor id}/classifier/predict
+</pre></div>
+</div>
+<p>Argument as a part of URL</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{sensor id}: An object ID of a virtual sensor
+</pre></div>
+</div>
+<p>Returns</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>{
+    &quot;url&quot;: A URL of the HTTP call
+    &quot;method&quot;: &quot;GET&quot;
+    &quot;result&quot;: Error when prediction failed, otherwise ok
+    &quot;message&quot;: A human readable message from classifier.manager.train
+    &quot;ret&quot;: A predicted label
+}
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">REST APIs</a><ul>
+<li><a class="reference internal" href="#virtual-sensors">Virtual Sensors</a><ul>
+<li><a class="reference internal" href="#create-a-virtual-sensor">Create a Virtual Sensor</a></li>
+<li><a class="reference internal" href="#get-all-virtual-sensors">Get All Virtual Sensors</a></li>
+<li><a class="reference internal" href="#get-a-virtual-sensor">Get a Virtual Sensor</a></li>
+<li><a class="reference internal" href="#update-a-virtual-sensor-information">Update a Virtual Sensor Information</a></li>
+<li><a class="reference internal" href="#delete-a-virtual-sensor">Delete a Virtual Sensor</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#samples">Samples</a><ul>
+<li><a class="reference internal" href="#get-a-list-of-samples-for-a-virtual-sensor">Get a List of Samples for a Virtual Sensor</a></li>
+<li><a class="reference internal" href="#delete-samples-for-a-virtual-sensor">Delete Samples for a Virtual Sensor</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#classifier">Classifier</a><ul>
+<li><a class="reference internal" href="#train-a-classifier-using-samples">Train a Classifier using Samples</a></li>
+<li><a class="reference internal" href="#makes-a-prediction-using-a-classifier">Makes a Prediction using a Classifier</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="install.html" title="previous chapter">Installation</a></li>
+      <li>Next: <a href="example.html" title="next chapter">System Overview</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/contents/rest_api.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Carnegie Mellon University.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="../_sources/contents/rest_api.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

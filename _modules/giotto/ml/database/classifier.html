@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>giotto.ml.database.classifier &mdash; giotto  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="giotto  documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for giotto.ml.database.classifier</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<div class="viewcode-block" id="MLClassifier"><a class="viewcode-back" href="../../../../giotto.ml.database.html#giotto.ml.database.classifier.MLClassifier">[docs]</a><span class="k">class</span> <span class="nc">MLClassifier</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;Classifier base class&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dictionary</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">serialized</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Initializes an instance</span>
+
+<span class="sd">        Initializes an instance with 0, null, and None when dictionary is not passed.</span>
+<span class="sd">        When a dictionary is passed, sets properties based on the dictionary. If the</span>
+<span class="sd">        dictionary is fetched from a database, classifier, scaler, model, and selector</span>
+<span class="sd">        are serialized. Thus, loads them before setting.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dictionary: a dictionary that contains properties.</span>
+<span class="sd">                {</span>
+<span class="sd">                    &#39;_id&#39;: An object ID of a classifier</span>
+<span class="sd">                    &#39;sensor_id&#39;: An object ID of a virtual sensor which this classifier</span>
+<span class="sd">                        is associated to</span>
+<span class="sd">                    &#39;user_id&#39;: A user ID of an owner of this classifier</span>
+<span class="sd">                    &#39;model_name&#39;:&#39;random forest&#39;</span>
+<span class="sd">                    &#39;labels&#39;: a list of potential outputs from this classifier</span>
+<span class="sd">                    &#39;sampling_period&#39;: A length of timeseries data necessary to make</span>
+<span class="sd">                        a prediction. This value is calculated when this classifier is</span>
+<span class="sd">                        trained by taking average of sampling periods of all samples</span>
+<span class="sd">                        in a given training set</span>
+<span class="sd">                    &#39;classifier&#39;: A trained random forest classifier</span>
+<span class="sd">                    &#39;scaler&#39;: A scaler that scales inputs as a part of pre-processing</span>
+<span class="sd">                    &#39;selector&#39;: A feature selector</span>
+<span class="sd">                }</span>
+
+<span class="sd">        Returns: A MLClassifier instance</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="n">dictionary</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">object_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sensor_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">selector</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sampling_period</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">object_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sensor_id</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;sensor_id&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;model_name&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sampling_period</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;sampling_period&#39;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">serialized</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;classifier&#39;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;scaler&#39;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">selector</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;selector&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;classifier&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;scaler&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">selector</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s1">&#39;selector&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="MLClassifier.to_dictionary"><a class="viewcode-back" href="../../../../giotto.ml.database.html#giotto.ml.database.classifier.MLClassifier.to_dictionary">[docs]</a>    <span class="k">def</span> <span class="nf">to_dictionary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serialized</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Creates a dictionary that contains all properties</span>
+
+<span class="sd">        Creates a dictionary that contains all properties to store a classifier</span>
+<span class="sd">        in a database. When serialized=True, classifier, scaler, selector, and</span>
+<span class="sd">        model instance are serialized.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            serialized: A flag that indicates if instances should be serialized or not</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dic: A dictionary that contains all properties, typically used to store</span>
+<span class="sd">                a classifier in a database </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">dic</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;object_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_id</span><span class="p">,</span>
+            <span class="s1">&#39;sensor_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sensor_id</span><span class="p">,</span>
+            <span class="s1">&#39;user_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span>
+            <span class="s1">&#39;model_name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span>
+            <span class="s1">&#39;sampling_period&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_period</span><span class="p">,</span>
+            <span class="s1">&#39;labels&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">serialized</span><span class="p">:</span>
+            <span class="n">dic</span><span class="p">[</span><span class="s1">&#39;classifier&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">)</span>
+            <span class="n">dic</span><span class="p">[</span><span class="s1">&#39;scaler&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="p">)</span>
+            <span class="n">dic</span><span class="p">[</span><span class="s1">&#39;selector&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selector</span><span class="p">)</span>
+            <span class="n">dic</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dic</span><span class="p">[</span><span class="s1">&#39;classifier&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span>
+            <span class="n">dic</span><span class="p">[</span><span class="s1">&#39;scaler&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span>
+            <span class="n">dic</span><span class="p">[</span><span class="s1">&#39;selector&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">selector</span>
+            <span class="n">dic</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+
+        <span class="k">return</span> <span class="n">dic</span></div>
+
+<div class="viewcode-block" id="MLClassifier.train"><a class="viewcode-back" href="../../../../giotto.ml.database.html#giotto.ml.database.classifier.MLClassifier.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Trains a classifier using the dataset as a training set</span>
+
+<span class="sd">        A derived class should implement a training algorithm that creates and</span>
+<span class="sd">        train classifier, scaler, selector, and model here. </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dataset: A dictionary that holds a training set</span>
+<span class="sd">                {</span>
+<span class="sd">                    &#39;data&#39;: An array of training samples</span>
+<span class="sd">                         [</span>
+<span class="sd">                            {</span>
+<span class="sd">                                &#39;timeseries&#39;: An array of timeseries data arrays</span>
+<span class="sd">                                &#39;label&#39;: A string label for the timeseries data</span>
+<span class="sd">                            },</span>
+<span class="sd">                            { more samples }</span>
+<span class="sd">                        ]</span>
+<span class="sd">                    &#39;labels&#39;: An array of string labels</span>
+<span class="sd">                    &#39;sampling_period&#39;: An average duration of samples</span>
+<span class="sd">                }</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Nothing </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MLClassifier.predict"><a class="viewcode-back" href="../../../../giotto.ml.database.html#giotto.ml.database.classifier.MLClassifier.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeseries</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Makes a prediction using a pre-trained classifier</span>
+
+<span class="sd">        A derived class should implement a prediction algorithm here.</span>
+<span class="sd">        </span>
+<span class="sd">        Args: </span>
+<span class="sd">            timeseries: Timeseries data for prediction</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            label: a string label as a prediction</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MLClassifier.to_json"><a class="viewcode-back" href="../../../../giotto.ml.database.html#giotto.ml.database.classifier.MLClassifier.to_json">[docs]</a>    <span class="k">def</span> <span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a JSON representation of a MLClassifier instance&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">__dict__</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="MLClassifier.preprocess"><a class="viewcode-back" href="../../../../giotto.ml.database.html#giotto.ml.database.classifier.MLClassifier.preprocess">[docs]</a>    <span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_readings</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Extracts features from timeseries data</span>
+
+<span class="sd">        Extracts the following features from a array of timeseries data.</span>
+<span class="sd">        Averages, standard deviations, numbers of peaks, medians, minimum values,</span>
+<span class="sd">        maximum values, numbers of zero-crossing, differences between max and min.</span>
+<span class="sd">        If you want to implement your own feature extraction, overwrite this function</span>
+<span class="sd">        in a derived class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sensor_readings: An array of timeseries data</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            f: a ndarray that contains features for each timeseries data </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">colNum</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sensor_readings</span><span class="p">)</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">colNum</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">colNum</span><span class="p">):</span>
+
+            <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sensor_readings</span><span class="p">[</span><span class="n">col</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+            <span class="c1"># average</span>
+            <span class="n">features</span><span class="p">[</span><span class="n">col</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+            
+            <span class="c1"># std</span>
+            <span class="n">features</span><span class="p">[</span><span class="n">col</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+            
+            <span class="c1"># peak count</span>
+            <span class="n">features</span><span class="p">[</span><span class="n">col</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peak_count</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+
+            <span class="c1"># median</span>
+            <span class="n">features</span><span class="p">[</span><span class="n">col</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+
+            <span class="c1"># min</span>
+            <span class="n">features</span><span class="p">[</span><span class="n">col</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+
+            <span class="c1"># max</span>
+            <span class="n">features</span><span class="p">[</span><span class="n">col</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+
+            <span class="c1"># zero crossing</span>
+            <span class="n">features</span><span class="p">[</span><span class="n">col</span><span class="p">,</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossing</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+
+            <span class="c1"># max - min</span>
+            <span class="n">features</span><span class="p">[</span><span class="n">col</span><span class="p">,</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="n">features</span><span class="p">[</span><span class="n">col</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span> <span class="o">-</span> <span class="n">features</span><span class="p">[</span><span class="n">col</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
+
+        <span class="n">f</span> <span class="o">=</span> <span class="n">features</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">colNum</span><span class="o">*</span><span class="mi">8</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">f</span></div>
+
+<div class="viewcode-block" id="MLClassifier.zero_crossing"><a class="viewcode-back" href="../../../../giotto.ml.database.html#giotto.ml.database.classifier.MLClassifier.zero_crossing">[docs]</a>    <span class="k">def</span> <span class="nf">zero_crossing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Counts the number of zero-crossing in given timesries data&#39;&#39;&#39;</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">*</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">count</span></div>
+
+<div class="viewcode-block" id="MLClassifier.peak_count"><a class="viewcode-back" href="../../../../giotto.ml.database.html#giotto.ml.database.classifier.MLClassifier.peak_count">[docs]</a>    <span class="k">def</span> <span class="nf">peak_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Counts the number of peaks in given timesries data&#39;&#39;&#39;</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">-</span><span class="mi">2</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">std</span><span class="o">*</span><span class="mi">2</span> <span class="ow">and</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">count</span></div></div>
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Carnegie Mellon University.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
