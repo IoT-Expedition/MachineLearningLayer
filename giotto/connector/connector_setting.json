@@ -1,0 +1,5 @@
+{
+	"sensor_uuid":"put a BD's sensor UUID here"
+	"virtual_sensor_id":"put a virtual sensor's ID here"
+	"sampling_period":10
+}
