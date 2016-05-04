@@ -1,12 +1,12 @@
 {
 	"buildingdepot_rest_api":{
-		"server":"http://bd-test.andrew.cmu.edu",
+		"server":"<host_name>",
 		"port":"82",
 		"api_prefix":"/api"
 	},
 
 	"oauth":{
-		"id":"LLwSpemrRGwM5hyEuyxbrF0ri6oquwfvYAkLo0XY",
-		"key":"0NWDuJGyG0ZVZohycCp83uCO26aacGIHT7AhhGDOgvqHBvft0N"
+		"id":"<oauth_id>",
+		"key":"<oauth_key>"
 	}
 }
