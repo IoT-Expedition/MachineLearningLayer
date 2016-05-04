@@ -13,24 +13,23 @@ if [[ $UID -ne 0 ]]; then
         exit 1
 fi
 
-echo -e "\nPlease provide the hostname or IP address of your BuildingDepot installation."
-read bd_hostname
-sed -i "s|<host_name>|$bd_hostname|g" ./giotto/config/buildingdepot_setting.json
-echo -e "Please enter the OAuth id and key generated from your Dataservice (http://<hostname>:82)."
-echo -e "OAuth Id:"
-read oauth_id
-echo -e "OAuth Key:"
-read oauth_key
-sed -i "s|<oauth_id>|$oauth_id|g" ./giotto/config/buildingdepot_setting.json
-sed -i "s|<oauth_key>|$oauth_key|g" ./giotto/config/buildingdepot_setting.json
-
-
 #Copy code and path to PYTHON PATH
 mkdir -p /srv
 cp -r giotto/ /srv/
 cp supervisor-ml.conf /etc/supervisor/conf.d/
 echo 'export PYTHONPATH=${PYTHONPATH}:/srv' >> ~/.bashrc
 source ~/.bashrc
+
+echo -e "\nPlease provide the hostname or IP address of your BuildingDepot installation."
+read bd_hostname
+sed -i "s|<host_name>|$bd_hostname|g" /srv/giotto/config/buildingdepot_setting.json
+echo -e "Please enter the OAuth id and key generated from your Dataservice (http://<hostname>:82)."
+echo -e "OAuth Id:"
+read oauth_id
+echo -e "OAuth Key:"
+read oauth_key
+sed -i "s|<oauth_id>|$oauth_id|g" /srv/giotto/config/buildingdepot_setting.json
+sed -i "s|<oauth_key>|$oauth_key|g" /srv/giotto/config/buildingdepot_setting.json
 
 function install_packages {
 
@@ -43,7 +42,7 @@ pip install influxdb==2.6.0
 
 install_packages
 service supervisor stop
-echo -e "Please wait!\n"
+echo -e "Please wait!"
 while (( ($(service supervisor status | grep "is running" | wc -l)) > 0 ));do
     continue
 done
